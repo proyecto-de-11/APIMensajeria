@@ -25,6 +25,7 @@ export class ChatsGateway implements OnModuleInit {
 
   @SubscribeMessage('createChat')
   create(@MessageBody() createChatDto: CreateChatDto) {
+    console.log('Creating chat with data:', createChatDto);
     return this.chatsService.create(createChatDto);
   }
 
