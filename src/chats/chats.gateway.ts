@@ -1,11 +1,27 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { Server, Socket } from 'socket.io';
+import { OnModuleInit } from '@nestjs/common';
 
 @WebSocketGateway()
-export class ChatsGateway {
+export class ChatsGateway implements OnModuleInit {
+  @WebSocketServer()
+  public server: Server;
+
   constructor(private readonly chatsService: ChatsService) {}
+
+  onModuleInit() {
+    this.server.on('connection', (socket: Socket) => {
+      console.log(`Client connected: ${socket.id}`);
+    });
+  }
 
   @SubscribeMessage('createChat')
   create(@MessageBody() createChatDto: CreateChatDto) {
