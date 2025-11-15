@@ -7,8 +7,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [ ConfigModule.forRoot({
-      isGlobal: true
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -16,13 +17,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       port: 20787,
       username: 'avnadmin',
       password: 'AVNS_PfxZhqEHsyFEn50ylaO',
-      database: 'TiendaOnline',
+      database: 'chat',
       logging: true,
       synchronize: false,
       autoLoadEntities: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    })
-    ,ChatsModule],
+    }),
+    ChatsModule,
+  ],
   providers: [AppService],
 })
 export class AppModule {}
