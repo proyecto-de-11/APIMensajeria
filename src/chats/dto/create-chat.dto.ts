@@ -1,1 +1,4 @@
-export class CreateChatDto {}
+export class CreateChatDto {
+  userId1: number;
+  userId2: number;
+}
