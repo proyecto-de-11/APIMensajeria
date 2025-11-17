@@ -5,6 +5,7 @@ import { Repository, DataSource, In } from 'typeorm';
 import { ChatParticipante } from './entities/ChatParticipante.entity';
 import { Mensaje } from './entities/mensaje.entity';
 import { TransformedChat } from './dto/type';
+import { group } from 'console';
 
 @Injectable()
 export class ChatsService {
@@ -182,8 +183,6 @@ export class ChatsService {
       .orderBy('mensaje.id', 'DESC')
       .take(limit);
 
-   
-
     const messages = await query.getMany();
 
     // Retornar en orden cronológico (más antiguo primero)
@@ -224,5 +223,12 @@ export class ChatsService {
           // ...
         };
       });
+  }
+
+  async getChatByGroupId(groupId: number[]): Promise<Chat[]> {
+    const chat = await this.chatRepository.find({
+      where: { grupoId: In(groupId) },
+    });
+    return chat;
   }
 }
