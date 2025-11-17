@@ -76,9 +76,24 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // Evento para unirse a un chat específico
   @SubscribeMessage('joinChat')
   async handleJoinChat(
-    @MessageBody() data: { chatId: number; usuarioId: number },
+    @MessageBody() data: { grupId: number[] },
     @ConnectedSocket() client: Socket,
   ) {
-    return { success: false, message: 'No eres participante de este chat' };
+    const userId = client.handshake.query.userId as string;
+
+    console.log('data grupId', data.grupId);
+    const chats = await this.chatsService.getChatByGroupId(data.grupId);
+
+    if (chats && chats.length > 0) {
+      chats.forEach((chat) => {
+        // Verificar si el usuario es participante del chat
+        client.join(`chat_${chat.id}`);
+        console.log(`Usuario ${userId} unido al chat grupal  ${chat.id}`);
+      });
+
+      this.server.to(client.id).emit('joinedChats', { chats });
+    }
+
+    console.log(`Usuario ${userId} solicitó unirse a chats grupales.`);
   }
 }
