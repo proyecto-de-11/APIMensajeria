@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
@@ -12,6 +13,34 @@ import { CreateChatDto } from './dto/create-chat.dto';
 @Controller('api/chats')
 export class ChatController {
   constructor(private readonly ChatsService: ChatsService) {}
+
+  /*@Get(':userId1')
+  async getChatsByUserId(@Param('userId1') userId1: string) {
+    try {
+      const chats = await this.ChatsService.getChatByUserId(+userId1);
+
+      if (!chats || chats.length === 0) {
+        return {
+          ok: true,
+          estatus: 200,
+          message: 'El usuario no tiene chats.',
+          chats: [],
+        };
+      }
+
+      return {
+        ok: true,
+        estatus: 200,
+        message: 'Chats del usuario obtenidos exitosamente.',
+        chats: this.ChatsService.transformChatsForUser(chats, +userId1),
+      };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error al obtener los chats del usuario',
+      );
+    }
+  }*/
 
   @Post()
   async createChat(@Body() userIds: CreateChatDto) {
@@ -148,5 +177,27 @@ export class ChatController {
       console.error('Error al obtener el chat grupal:', error);
       throw new InternalServerErrorException('Error al obtener el chat grupal');
     }
+  }
+
+  @Get(':chatId/messages')
+  async getMessages(
+    @Param('chatId') chatId: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 50,
+    @Query('before') before?: string, // Para cursor-based pagination
+  ) {
+    const messages = await this.ChatsService.getMessages(
+      chatId,
+      page,
+      limit,
+      before,
+    );
+
+    return {
+      messages,
+      page,
+      limit,
+      hasMore: messages.length === limit,
+    };
   }
 }
