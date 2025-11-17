@@ -5,7 +5,6 @@ import { Repository, DataSource, In } from 'typeorm';
 import { ChatParticipante } from './entities/ChatParticipante.entity';
 import { Mensaje } from './entities/mensaje.entity';
 import { TransformedChat } from './dto/type';
-import { group } from 'console';
 
 @Injectable()
 export class ChatsService {
