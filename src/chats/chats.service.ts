@@ -170,6 +170,26 @@ export class ChatsService {
     });
   }
 
+  async getMessages(
+    chatId: number,
+    page: number = 1,
+    limit: number = 50,
+    before?: string,
+  ) {
+    const query = this.mensajeRepository
+      .createQueryBuilder('mensaje')
+      .where('mensaje.chatId = :chatId', { chatId })
+      .orderBy('mensaje.id', 'DESC')
+      .take(limit);
+
+   
+
+    const messages = await query.getMany();
+
+    // Retornar en orden cronológico (más antiguo primero)
+    return messages.reverse();
+  }
+
   transformChatsForUser(
     chats: Chat[],
     callingUserId: number,
