@@ -11,7 +11,11 @@ import { ChatsService } from './chats.service';
 
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   public server: Server;
@@ -95,5 +99,18 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     console.log(`Usuario ${userId} solicitó unirse a chats grupales.`);
+  }
+
+  @SubscribeMessage('typing')
+  handleTyping(
+    @MessageBody() data: { chatId: number; isTyping: boolean },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = client.handshake.query.userId as string;
+
+    client.broadcast.to(`chat_${data.chatId}`).emit('userTyping', {
+      usuarioId: userId,
+      isTyping: data.isTyping,
+    });
   }
 }
