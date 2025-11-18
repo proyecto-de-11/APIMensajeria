@@ -52,6 +52,21 @@ export class ChatController {
           userIds.userId2,
         ]);
 
+      if (chatEncontrado && userIds.mensajeInicial) {
+        await this.ChatsService.saveMensaje(
+          chatEncontrado.id,
+          userIds.userId1,
+          userIds.mensajeInicial,
+        );
+
+        return {
+          ok: false,
+          estatus: 201,
+          message: 'Ya existe un chat con solo esos dos usuarios.',
+          chat: chatEncontrado,
+        };
+      }
+
       if (chatEncontrado) {
         return {
           ok: false,
@@ -59,19 +74,37 @@ export class ChatController {
           message: 'Ya existe un chat con solo esos dos usuarios.',
           chat: chatEncontrado,
         };
-      } else {
+      } else if (userIds.mensajeInicial) {
+        const newChat = await this.ChatsService.CreatePrivateChat([
+          userIds.userId1,
+          userIds.userId2,
+        ]);
+
+        if (newChat) {
+          await this.ChatsService.saveMensaje(
+            newChat.id,
+            userIds.userId1,
+            userIds.mensajeInicial,
+          );
+        }
+
         return {
           ok: false,
           estatus: 201,
           message: 'chat creado exitosamente.',
-          chat: await this.ChatsService.CreatePrivateChat([
-            userIds.userId1,
-            userIds.userId2,
-          ]),
+          chat: newChat,
         };
       }
+
+      return {
+        ok: false,
+        estatus: 404,
+        message: 'no has echo un mensjae inicia para crear el chat',
+        chatId: null,
+      };
     } catch (error) {
       console.error('Error al buscar el chat:', error);
+      throw new InternalServerErrorException('Error al crear el chat inicial');
     }
   }
 
