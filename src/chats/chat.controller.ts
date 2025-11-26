@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   InternalServerErrorException,
   Param,
   Post,
@@ -173,11 +175,27 @@ export class ChatController {
         .filter((id) => !isNaN(id));
 
       const chats = await this.ChatsService.findChatsByGroupIds(groupIdsArray);
+
+      if (chats==null){
+        return {
+        ok: false,
+        estatus: 401,
+        message: 'no existen esos chat'
+      }
+
+      }
+
+      console.log(chats)
+
+
+      const filtrochat  = chats.filter( (item) => item.participantes.length >= 2 )
+      
+
       return {
         ok: true,
         estatus: 200,
         message: 'Chats grupales obtenidos exitosamente.',
-        chats,
+        filtrochat,
       };
     } catch (error) {
       console.error('Error al obtener los chats grupales:', error);
@@ -232,5 +250,40 @@ export class ChatController {
       limit,
       hasMore: messages.length === limit,
     };
+  }
+
+  @Post('add/member')
+  async addMember(@Body() data: { grupoId: number,member:number }){
+    try {
+      if (data.grupoId==null || data.member ==null || isNaN(data.grupoId) || isNaN(data.member)) {
+           throw new HttpException('los datos n inavalidos',HttpStatus.BAD_REQUEST)
+      }
+
+
+    const chat = await this.ChatsService.findGroupChat(data.grupoId)
+
+    if (chat==null){
+      throw new HttpException('chat no encontrado',HttpStatus.BAD_REQUEST)
+
+    }
+
+    const union = await this.ChatsService.addMembersToChat({chat:chat,member:data.member})
+
+    return {
+      ok:true,
+      message:'nuevo miembro agregado a chat :' + union.chat + ', grupal',
+      data:union
+    }
+
+    } catch (error) {
+      throw new HttpException({
+      status: HttpStatus.BAD_REQUEST,
+      error: 'hay un error en este endpoint',
+    }, HttpStatus.BAD_REQUEST, {
+      cause: error
+    });
+      
+    }
+
   }
 }

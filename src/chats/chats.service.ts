@@ -6,6 +6,9 @@ import { ChatParticipante } from './entities/ChatParticipante.entity';
 import { Mensaje } from './entities/mensaje.entity';
 import { TransformedChat } from './dto/type';
 
+interface memberAdd { chat: Chat, member: number }
+
+
 @Injectable()
 export class ChatsService {
   constructor(
@@ -19,7 +22,7 @@ export class ChatsService {
     private mensajeRepository: Repository<Mensaje>,
 
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   async findChatByExclusiveParticipants(
     userIds: number[],
@@ -141,7 +144,9 @@ export class ChatsService {
       where: {
         // Usa el operador 'In' de TypeORM para generar la cláusula WHERE grupoId IN (id1, id2, ...)
         grupoId: In(groupIds),
+        
       },
+      relations:['participantes']
       // NOTA: Si quisieras traer alguna relación, usarías 'relations: ["participantes"]'
       // Como solo quieres los chats, no se añade nada más aquí.
     });
@@ -229,5 +234,19 @@ export class ChatsService {
       where: { grupoId: In(groupId) },
     });
     return chat;
+  }
+
+  async addMembersToChat({ chat, member }: memberAdd): Promise<ChatParticipante> {
+
+    const participante = await this.chatParticipantesRepository.create(
+      {
+        chat: chat,
+        usuarioId: member,
+        activo: true, // Asumiendo que se crea activo por defecto
+      }
+    )
+
+    return await this.chatParticipantesRepository.save(participante)
+
   }
 }
